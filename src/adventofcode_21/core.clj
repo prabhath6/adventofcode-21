@@ -2261,12 +2261,6 @@
     (if (or r-winner c-winner)
       data)))
 
-"
-1. get the data
-2. replace items
-3. check for winner
-4. if winner exit or else loop
-"
 
 (defn get-sum [data curr-val]
   (let [winner-matrix (filter #(not-empty %1) (for [x data] (filter #(not= "-1" %1) x)))
@@ -2285,4 +2279,62 @@
                   :else
                   (recur updated-data (rest drawn-numbers)))))]
   (get-sum (first x) (last x)))
+
+
+;; Day 5
+;; Part 1
+
+(def day-5-data
+  "
+  0,9 -> 5,9\n8,0 -> 0,8\n9,4 -> 3,4\n2,2 -> 2,1\n7,0 -> 7,4\n6,4 -> 2,0\n0,9 -> 2,9\n3,4 -> 1,4\n0,0 -> 8,8\n5,5 -> 8,2
+  ")
+
+(def clean-up-day5-data
+  (clojure.string/split (clojure.string/trim day-5-data) #"\n"))
+
+(defn convert-to-cords [data]
+  (let [[start-s end-s] (clojure.string/split data #"->")
+        start (map #(Integer/parseInt %1) (clojure.string/split (clojure.string/trim start-s) #","))
+        end (map #(Integer/parseInt %1) (clojure.string/split (clojure.string/trim end-s) #","))]
+    [start end]))
+;; (map convert-to-cords clean-up-day5-data)
+
+(defn get-max [data]
+  (apply max (flatten data)))
+;; (get-max (map convert-to-cords clean-up-day5-data))
+
+
+(defn get-matrix-based-on-max-value [max-val]
+  (let [row-data (loop [x []
+                        y max-val]
+                   (cond (= y 0)
+                         x
+                         :else
+                         (recur (conj x -1) (dec y))))]
+    (loop [y []
+           z max-val]
+      (cond (= z 0)
+            y
+            :else
+            (recur (conj y row-data) (dec z))))))
+
+
+(def start-matrix (get-matrix-based-on-max-value (get-max (map convert-to-cords clean-up-day5-data))))
+
+
+(defn is-horizontal-vertical? [cords]
+  (let [[x1 y1] (first cords)
+        [x2 y2] (last cords)]
+    (or (= x1 x2) (= y1 y2))))
+
+(defn get-horizontal-and-vertical-lines [data]
+  (filter is-horizontal-vertical? data))
+;; (get-horizontal-and-vertical-lines (map convert-to-cords clean-up-day5-data))
+
+
+(defn should-update-cols? [line-points]
+  (let [[x1 y1] (first line-points)
+        [x2 y2] (last line-points)]
+    (= y1 y2)))
+
 
